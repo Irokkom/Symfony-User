@@ -27,10 +27,10 @@ security:
       form_login:  # Authentification par formulaire
         login_path: app_login  # La route pour afficher le formulaire de connexion
         check_path: /login  # La route où les informations de connexion sont envoyées via une requête POST
-        default_target_path: /users  # Après une connexion réussie, l'utilisateur est redirigé vers la page /users
+        default_target_path: / # Après une connexion réussie, l'utilisateur est redirigé vers la page /users
       logout:  # Gestion de la déconnexion
         path: /logout  # La route pour se déconnecter
-
+        target: /login  # Après une déconnexion, l'utilisateur est redirigé vers la page de connexion
     # Configuration pour les API (commentée ici, mais peut être activée si nécessaire pour les connexions API basées sur JSON ou JWT)
     # api_login:
     #     pattern: ^/api/login  # Cette route serait spécifique aux API (connexion via API)
@@ -52,4 +52,6 @@ security:
     - { path: ^/users/new, roles: PUBLIC_ACCESS }  # La page /users/new (inscription) est publique (tout le monde peut y accéder)
 
     # Restreint l'accès à la page des utilisateurs (/users) uniquement aux utilisateurs complètement authentifiés
-    - { path: ^/users, roles: IS_AUTHENTICATED_FULLY }  # L'accès à la page /users est restreint aux utilisateurs qui sont entièrement authentifiés
+    - { path: ^/users, roles: ROLE_ADMIN }  # L'accès à la page /users est restreint aux utilisateurs qui sont entièrement authentifiés
+
+    # - { path: ^/article, roles: ROLE_ADMIN }

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block body %}
+<h1>{{ article.title }}</h1>
+
+<p><strong>Contenu :</strong></p>
+<p>{{ article.content }}</p>
+
+{% if article.categories is not empty %}
+    <p><strong>Catégories :</strong></p>
+    <ul>
+        {% for categories in article.categories %}
+            <li>{{ categories.name }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p><em>Aucune catégorie associée.</em></p>
+{% endif %}
+
+<a href="{{ path('article_index') }}">Retour à la liste des articles</a>
+
+{% if is_granted('ROLE_ADMIN') %}
+    <a href="{{ path('article_edit', { id: article.id }) }}">Modifier cet article</a>
+    <form method="post" action="{{ path('article_delete', { id: article.id }) }}" style="display: inline;" onsubmit="return confirm('Voulez-vous vraiment supprimer cet article ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+    </form>
+{% endif %}
+{% endblock %}
