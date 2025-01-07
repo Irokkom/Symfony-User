@@ -4,6 +4,8 @@
 // Cette classe représente une entité utilisateur qui est mappée à la base de données
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM; // On importe les annotations de Doctrine pour gérer la persistance des données en base de données
 use Symfony\Component\Security\Core\User\UserInterface; // On importe l'interface UserInterface de Symfony pour la gestion des utilisateurs
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface; // On importe PasswordAuthenticatedUserInterface pour gérer l'authentification avec mot de passe
@@ -26,7 +28,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface // La cl
     private ?string $password = null; // Propriété privée pour stocker le mot de passe de l'utilisateur
 
     #[ORM\Column(length: 50)] // La propriété 'name' est une colonne avec une longueur maximale de 50 caractères
-    private ?string $name = null; // Propriété privée pour stocker le nom de l'utilisateur
+    private ?string $name = null;
+
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    private ?string $username = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'comment_author')]
+    private Collection $comments;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    } // Propriété privée pour stocker le nom de l'utilisateur
 
     // Méthode pour obtenir l'ID de l'utilisateur. Elle renvoie l'ID de l'entité
     public function getId(): ?int { return $this->id; }
@@ -73,6 +89,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface // La cl
         return $this; 
     }
 
+    // Méthode pour obtenir le username
+    public function getUsername(): ?string
+    {
+        return $this->username;
+    }
+
+    public function setUsername(string $username): self
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
     // Méthode requise par l'interface PasswordAuthenticatedUserInterface
     // Elle est vide ici car il n'y a pas de données sensibles à effacer après l'authentification
     public function eraseCredentials(): void 
@@ -83,5 +112,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface // La cl
     public function getUserIdentifier(): string 
     {
         return $this->email; // Retourne l'email de l'utilisateur comme identifiant unique
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setCommentAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getCommentAuthor() === $this) {
+                $comment->setCommentAuthor(null);
+            }
+        }
+
+        return $this;
     }
 }
